@@ -25,11 +25,9 @@ object Lists {
     */
   def sum(xs: List[Int]): Int = {
 
-    def loop(acc: Int, list: List[Int]): Int = {
-      if (list.isEmpty) acc
-      else loop(acc + list.head, list.tail)
-    }
-    loop(0, xs)
+    if (xs.isEmpty) 0
+    else xs.head + sum(xs.tail)
+
   }
 
   /**
@@ -45,5 +43,16 @@ object Lists {
     * @return The largest element in `xs`
     * @throws java.util.NoSuchElementException if `xs` is an empty list
     */
-  def max(xs: List[Int]): Int = ???
+  def max(xs: List[Int]): Int = {
+
+    if (xs.isEmpty) throw new NoSuchElementException
+    def loop(list: List[Int], max: Int): Int = {
+
+      if (list.isEmpty) max
+      else if (list.head > max) loop(list.tail, list.head)
+      else loop(list.tail, max)
+    }
+
+    loop(xs, 0);
+  }
 }

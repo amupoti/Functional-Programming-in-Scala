@@ -126,7 +126,9 @@ class ListsSuite extends FunSuite {
   }
 
   test("empty list max") {
+    intercept[NoSuchElementException] {
     assert(max(List()) === 0)
+    }
   }
 
   test("sum with negative") {
