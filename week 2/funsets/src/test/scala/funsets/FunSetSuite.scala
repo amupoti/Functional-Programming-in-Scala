@@ -1,9 +1,7 @@
 package funsets
 
-import org.scalatest.FunSuite
-
-
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
@@ -110,5 +108,13 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("intersect will contain elements that are exactly in both sets") {
+    new TestSets {
+      val u = union(s1, s2)
+      val s = intersect(u, s2)
+      assert(!contains(s, 1), "Not in both")
+      assert(contains(s, 2), "Not in both")
+    }
+  }
 
 }
