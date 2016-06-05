@@ -117,4 +117,22 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("forall will check if integers are in the set"){
+    new TestSets {
+      assert(forall(x=>x<5,x=>x<10),"exists in all");
+    }
+  }
+
+  test("Six does not exist in x<5"){
+    new TestSets {
+      assert(!exists(x=>x<5,x=>x>6))
+    }
+  }
+
+  test("2 exists in x <5"){
+    new TestSets {
+      assert(exists(x=>x<5,x=>x==2))
+    }
+  }
+
 }
