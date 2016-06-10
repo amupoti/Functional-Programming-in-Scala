@@ -69,6 +69,15 @@ abstract class TweetSet {
   def mostRetweeted: Tweet;
 
 
+  def reverseList(tlist: TweetList): TweetList = {
+
+    def reverseListLoop(original: TweetList, reversed: TweetList): TweetList = {
+      if (original.isEmpty) reversed
+      else reverseListLoop(original.tail, new Cons(original.head, reversed))
+    }
+    reverseListLoop(tlist, Nil)
+
+  }
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -86,8 +95,6 @@ abstract class TweetSet {
       if (set.isEmpty) list
       else {
         val t = set.mostRetweeted
-        println("Set contains:")
-        set.foreach(t => println(t))
         descendingLoop(set.remove(t), new Cons(t, list))
       }
 
@@ -95,9 +102,10 @@ abstract class TweetSet {
 
 
     val list = descendingLoop(this, tlist)
+    val reversed = reverseList(list)
     println("Printing list of tweets")
-    list.foreach(t => println(t))
-    return list
+    reversed.foreach(t => println(t))
+    return reversed
 
   }
   
@@ -210,7 +218,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     * Question: Should we implment this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  override def union(that: TweetSet): TweetSet = ((left union right) union that) incl elem
+  override def union(that: TweetSet): TweetSet = (left union (right union that)) incl elem
 
   /**
     * Returns the tweet from this set which has the greatest retweet count.
@@ -262,14 +270,22 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-    lazy val googleTweets: TweetSet = ???
-  lazy val appleTweets: TweetSet = ???
-  
+  val tweets = TweetReader.allTweets
+  val googleTweets: TweetSet = TweetReader.allTweets.filter(t => containsInList(google, t.text))
+  val appleTweets: TweetSet = TweetReader.allTweets.filter(t => containsInList(apple, t.text))
+
+
+  def containsInList(list: List[String], text: String): Boolean = {
+
+    if (list.isEmpty) false
+    else containsInList(list.tail, text) | text.contains(list.head)
+  }
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
    * sorted by the number of retweets.
    */
-     lazy val trending: TweetList = ???
+  val union = appleTweets.union(googleTweets)
+  lazy val trending: TweetList = union.descendingByRetweet
   }
 
 object Main extends App {
