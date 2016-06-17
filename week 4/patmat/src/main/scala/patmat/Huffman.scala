@@ -146,13 +146,13 @@ object Huffman {
   def combine(trees: List[CodeTree]): List[CodeTree] = {
 
 
-    if (trees.size <= 2) trees
+    if (trees.size < 2) trees
     else {
       //Remove the first two elements
       val first = trees(0)
       val second = trees(1)
       val newTrees = trees.diff(List(first, second))
-      combine(((makeCodeTree(trees(0), trees(1))) :: newTrees).sortBy(_.weight))
+      (makeCodeTree(first, second) :: newTrees).sortBy(_.weight)
     }
   }
   
@@ -173,10 +173,10 @@ object Huffman {
    *    the example invocation. Also define the return type of the `until` function.
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
-  def until(singletonF: (List[CodeTree] => Boolean), combineF: List[CodeTree] => List[CodeTree])
+  def until(isSingleton: (List[CodeTree] => Boolean), combineTrees: List[CodeTree] => List[CodeTree])
            (treeList: List[CodeTree]): List[CodeTree] = {
-    if (singletonF(treeList)) treeList
-    else until(singletonF, combineF)(combineF(treeList))
+    if (isSingleton(treeList)) treeList
+    else until(isSingleton, combineTrees)(combineTrees(treeList))
   }
   
   /**
@@ -203,12 +203,12 @@ object Huffman {
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
     val chars = Nil
 
-    def doDecode(innertree: CodeTree, innerBits: List[Bit], charList: List[Char]): List[Char] = {
+    def doDecode(innerTree: CodeTree, innerBits: List[Bit], charList: List[Char]): List[Char] = {
 
-      innertree match {
+      innerTree match {
         case Fork(left, right, _, _) => {
           if (innerBits.isEmpty) charList
-          else if (innerBits.head == 1) doDecode(left, innerBits.tail, charList)
+          else if (innerBits.head == 0) doDecode(left, innerBits.tail, charList)
           else doDecode(right, innerBits.tail, charList)
         }
         case Leaf(char, _) => {
@@ -258,8 +258,8 @@ object Huffman {
       else innerTree match {
         case Fork(left, right, chars, _) => {
           if (chars.contains(charList.head)) {
-            doEncode(left, innerBits ::: List(1), charList) ::: doEncode(right,
-              innerBits ::: List(0), charList)
+            doEncode(left, innerBits ::: List(0), charList) ::: doEncode(right,
+              innerBits ::: List(1), charList)
           }
           else Nil
         }

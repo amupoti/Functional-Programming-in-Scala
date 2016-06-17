@@ -51,20 +51,20 @@ class HuffmanSuite extends FunSuite {
 
   test("encode 3") {
     new TestTrees {
-      assert(encode(t2)("a".toList) == List(1, 1))
+      assert(encode(t2)("a".toList) == List(0, 0))
     }
   }
 
   test("encode 2 chars") {
     new TestTrees {
-      assert(encode(t1)("ab".toList) == List(1, 0))
+      assert(encode(t1)("ab".toList) == List(0, 1))
     }
   }
 
 
   test("decode simple") {
     new TestTrees {
-      assert(decode(t2, List(1, 1)) == ("a".toList))
+      assert(decode(t2, List(1, 1)) == ("dd".toList))
     }
   }
   test("test times returns the correct number of entries") {
@@ -75,6 +75,12 @@ class HuffmanSuite extends FunSuite {
 
   test("Print secret") {
     println("Secret is " + decodedSecret)
+  }
+
+  test("createCodeTree") {
+    new TestTrees {
+      println(createCodeTree("some testing".toList))
+    }
   }
 
 }
