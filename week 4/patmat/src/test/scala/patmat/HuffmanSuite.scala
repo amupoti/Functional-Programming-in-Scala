@@ -1,10 +1,8 @@
 package patmat
 
-import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-
 import patmat.Huffman._
 
 @RunWith(classOf[JUnitRunner])
@@ -49,6 +47,34 @@ class HuffmanSuite extends FunSuite {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
     }
+  }
+
+  test("encode 3") {
+    new TestTrees {
+      assert(encode(t2)("a".toList) == List(1, 1))
+    }
+  }
+
+  test("encode 2 chars") {
+    new TestTrees {
+      assert(encode(t1)("ab".toList) == List(1, 0))
+    }
+  }
+
+
+  test("decode simple") {
+    new TestTrees {
+      assert(decode(t2, List(1, 1)) == ("a".toList))
+    }
+  }
+  test("test times returns the correct number of entries") {
+    new TestTrees {
+      assert(times(string2Chars("abca")).size === 3)
+    }
+  }
+
+  test("Print secret") {
+    println("Secret is " + decodedSecret)
   }
 
 }

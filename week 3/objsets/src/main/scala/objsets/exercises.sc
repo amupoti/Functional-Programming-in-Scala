@@ -1,3 +1,5 @@
+import objsets.NonEmpty
+
 trait List[T] {
   def head: T
 
