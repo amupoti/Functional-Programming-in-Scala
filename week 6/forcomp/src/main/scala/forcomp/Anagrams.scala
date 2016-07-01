@@ -37,7 +37,8 @@ object Anagrams {
   def wordOccurrences(w: Word): Occurrences = w.toLowerCase.filter(c=>c.isLetter).groupBy(c=>c).mapValues(v => v.length).toList.sortBy(_._1)
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = s flatMap wordOccurrences
+  //TODO: merge chars or create a single word
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s mkString("")) sortBy(_._1)
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    *  the words that have that occurrence count.
@@ -84,14 +85,21 @@ object Anagrams {
    */
   def combinations(occurrences: Occurrences): List[Occurrences] = {
 
-    val map = occurrences.toMap
-    val list = (for{
-      c <- map.keys;
-      n <- 0 to map(c)
-    } yield (c,n)).toList
+    occurrences match{
+      case Nil => List(List())
+      case pairHead::pairTail =>
+        (for {
+          //Until the number definer for that character
+          n <- 0 to pairHead._2
+          comb <- combinations(pairTail)
+        }  yield (pairHead._1,n)::comb).toList.map(l=>removeZeros(l))
 
-    List(list)
+    }
+
+
   }
+
+  def removeZeros(list:List[(Char,Int)]) = list.filter(p=>p._2!=0)
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
    *
@@ -103,7 +111,11 @@ object Anagrams {
    *  Note: the resulting value is an occurrence - meaning it is sorted
    *  and has no zero-entries.
    */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences ={
+    val mapOther = y.toMap
+    removeZeros(x.toMap.foldLeft(List[(Char,Int)]())((acc,v)=>((v._1,v._2 - mapOther.getOrElse(v._1,0)))::acc)).sortBy(_._1)
+
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
    *

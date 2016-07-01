@@ -5,4 +5,8 @@ import forcomp.Anagrams._
 
 
 
-combinations(wordOccurrences("some entity"))
+combinations(wordOccurrences("cada"))
+
+
+List(1,2,3).toSet[Int].subsets.map(_.toList).toList
+
