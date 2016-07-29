@@ -1,20 +1,17 @@
 package calculator
 
 import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 import org.scalatest._
-
 import TweetLength.MaxTweetLength
 
 @RunWith(classOf[JUnitRunner])
 class CalculatorSuite extends FunSuite with ShouldMatchers {
 
-  /******************
-   ** TWEET LENGTH **
-   ******************/
+  /** ****************
+    * * TWEET LENGTH **
+    * *****************/
 
   def tweetLength(text: String): Int =
     text.codePointCount(0, text.length)
@@ -33,6 +30,16 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(result() == MaxTweetLength - tweetLength("foo blabla \uD83D\uDCA9 bar"))
   }
 
+  test("colorForRemainingCharsCount with a changing signal") {
+    val signalVar = Var(52)
+    val resultChangeColor = TweetLength.colorForRemainingCharsCount(signalVar)
+    assert(resultChangeColor() == "green")
+    signalVar.update(10)
+    assert(resultChangeColor() == "orange")
+    signalVar.update(-10)
+    assert(resultChangeColor() == "red")
+  }
+
 
   test("colorForRemainingCharsCount with a constant signal") {
     val resultGreen1 = TweetLength.colorForRemainingCharsCount(Var(52))
@@ -49,6 +56,13 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(resultRed1() == "red")
     val resultRed2 = TweetLength.colorForRemainingCharsCount(Var(-5))
     assert(resultRed2() == "red")
+  }
+
+  test("find roots with 2 solutions") {
+    val a: Signal[Double] = Signal(2)
+    val b: Signal[Double] = Signal(12)
+    val c: Signal[Double] = Signal(10)
+    assert(Polynomial.computeSolutions(a, b, c, Polynomial.computeDelta(a, b, c))()==Set(-1.0,-5.0))
   }
 
 }
