@@ -62,7 +62,13 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     val a: Signal[Double] = Signal(2)
     val b: Signal[Double] = Signal(12)
     val c: Signal[Double] = Signal(10)
-    assert(Polynomial.computeSolutions(a, b, c, Polynomial.computeDelta(a, b, c))()==Set(-1.0,-5.0))
+    assert(Polynomial.computeSolutions(a, b, c, Polynomial.computeDelta(a, b, c))() == Set(-1.0, -5.0))
+  }
+
+  test("Simple expressions") {
+    val map = Calculator.computeValues(Map("a" -> Signal(Literal(2.0)), ("b" -> Signal(Plus(Literal(3), Literal(1))))))
+    map mapValues (v => v()) foreach ((p) => println("Name is " + p._1 + " and value is " + p._2))
+    assert(true)
   }
 
 }
