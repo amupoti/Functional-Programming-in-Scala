@@ -1,7 +1,6 @@
 package scalashop
 
 import org.scalameter._
-import common._
 
 object VerticalBoxBlurRunner {
 
@@ -43,8 +42,13 @@ object VerticalBoxBlur {
    *  bottom.
    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-    // TODO implement this method using the `boxBlurKernel` method
-    ???
+    for (x <- Iterator.range(from, end);
+         y <- Iterator.range(0, src.height)) yield {
+      println("Values are {} and {}",x,y)
+      dst.update(x, y, boxBlurKernel(src, x, y, radius))
+
+    }
+
   }
 
   /** Blurs the columns of the source image in parallel using `numTasks` tasks.
