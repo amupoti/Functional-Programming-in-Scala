@@ -39,8 +39,8 @@ package object scalashop {
   /** Computes the blurred RGBA value of a single pixel of the input image. */
   def boxBlurKernel(src: Img, x: Int, y: Int, radius: Int): RGBA = {
     // TODO implement using while loops
-    val xData = (clamp(x - radius, 0, src.width), clamp(x + radius, 0, src.width));
-    val yData = (clamp(y - radius, 0, src.height), clamp(y + radius, 0, src.height));
+    val xData = (clamp(x - radius, 0, src.width-1), clamp(x + radius, 0, src.width-1));
+    val yData = (clamp(y - radius, 0, src.height-1), clamp(y + radius, 0, src.height-1));
 
 
     //TODO: check if we need to do this with "while" and why we cannot use a for comprehension
