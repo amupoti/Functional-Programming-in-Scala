@@ -42,12 +42,10 @@ object VerticalBoxBlur {
    *  bottom.
    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-    println("Vertical blur ", from, end)
     val pairs = for (x <- Iterator.range(from, end);
                      y <- Iterator.range(0, src.height)) yield (x, y)
 
     pairs foreach (p => dst.update(p._1, p._2, boxBlurKernel(src, p._1, p._2, radius)))
-
 
   }
 
@@ -58,15 +56,12 @@ object VerticalBoxBlur {
    *  columns.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-    // TODO implement using the `task` construct and the `blur` method
+
     val xMax = src.width - 1
     val columnsInStrip = src.width / numTasks
     val r = 0 to xMax by columnsInStrip
-    val limits = r map (i => (i, Math.min(i + columnsInStrip - 1, xMax)))
-
-
-    (limits map (l => common.task(
-      blur(src, dst, l._1, l._2, radius)
+    val limits = r map (i => (i, Math.min(i + columnsInStrip, xMax)))
+    (limits map (l => common.task(blur(src, dst, l._1, l._2, radius)
     ))).foreach(t => t.join())
 
 
