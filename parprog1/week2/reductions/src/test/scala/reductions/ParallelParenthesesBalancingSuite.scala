@@ -1,13 +1,9 @@
 package reductions
 
-import java.util.concurrent._
-import scala.collection._
-import org.scalatest.FunSuite
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import common._
-
-import ParallelParenthesesBalancing._
+import reductions.ParallelParenthesesBalancing._
 
 @RunWith(classOf[JUnitRunner])
 class ParallelParenthesesBalancingSuite extends FunSuite {
@@ -43,6 +39,20 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
     check(".(", false)
     check("(.", false)
     check(").", false)
+  }
+
+  test("combine should return balance for a simple open/close") {
+    def check(input: (Int, Int)) =
+      assert(input ==(0, 0))
+
+    check(combine((1, 0), (0, 1)))
+    check(combine((2, 0), (0, 2)))
+    check(combine((1,0),combine((2, 1), (0, 2))))
+    check(combine((1, 0), (0, 1)))
+  }
+
+  test("Test simple launch of parallel balancing"){
+    assert(parBalance("(((())))(((())))(((())))".toArray,8)==true)
   }
 
 
