@@ -65,7 +65,7 @@ object ParallelCountChange {
       if (moneyLoop == 0) 1
       else if (moneyLoop < 0) 0
       else if (coinsLoop.isEmpty) 0
-      else if (threshold(money, coins)) loop(moneyLoop - coinsLoop.head, coinsLoop, count, threshold) + loop(moneyLoop, coinsLoop.tail, count, threshold)
+      else if (threshold(moneyLoop, coinsLoop)) countChange(moneyLoop,coinsLoop)
       else {
         val (r, l) = common.parallel(loop(moneyLoop - coinsLoop.head, coinsLoop, count, threshold), loop(moneyLoop, coinsLoop.tail, count, threshold))
         r + l
