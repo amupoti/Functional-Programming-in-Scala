@@ -52,26 +52,20 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
     */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
-    println("parBalance")
 
     def traverse(idx: Int, until: Int, arg1: Int, arg2: Int): (Int, Int) = {
-      println("Traversing from "+idx+" until "+until)
       var i = idx
       var (l, r) = (arg1, arg2)
       while (i < until) {
-
         if (chars(i) == '(') l = l + 1
-        if (chars(i) == ')' && l > 0) l = l - 1
-        if (chars(i) == ')' && l == 0) r = r + 1
+        else if (chars(i) == ')' && l > 0) l = l - 1
+        else if (chars(i) == ')' && l == 0) r = r + 1
         i += 1
-
       }
-      println("Traverse returns "+l+","+r)
       (l, r)
     }
 
     def reduce(from: Int, until: Int): (Int, Int) = {
-      println("Reducing from "+from+" until "+until)
       if (until - from < threshold) {
         traverse(from, until, 0, 0)
       }
@@ -84,11 +78,6 @@ object ParallelParenthesesBalancing {
 
     reduce(0, chars.length) ==(0, 0)
 
-
-    // For those who want more:
-    // Prove that your reduction operator is associative!
-
-    false
   }
 
   def combine(left: (Int, Int), right: (Int, Int)): (Int, Int) = {
@@ -97,10 +86,7 @@ object ParallelParenthesesBalancing {
     val a = left._1-right._2
     if (a<0) r = Math.abs(a)
     else l = Math.abs(a)
-    l=l+right._1
-    r=r+left._2
-
-    (l,r)
+    (l + right._1, r + left._2)
 
   }
 }

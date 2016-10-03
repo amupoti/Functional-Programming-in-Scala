@@ -51,9 +51,21 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
     check(combine((1, 0), (0, 1)))
   }
 
-  test("Test simple launch of parallel balancing"){
+  test("Test long simple launch of parallel balancing") {
     assert(parBalance("(((())))(((())))(((())))".toArray,8)==true)
   }
 
+  test("Test short simple launch of parallel balancing") {
+    assert(parBalance("((((()))))".toArray, 8) == true)
+  }
+
+  test("Test short complex launch of parallel balancing") {
+    assert(parBalance("(()(()(())))".toArray, 8) == true)
+  }
+
+  test("Test unbalanced") {
+    assert(parBalance("((((()))))(".toArray, 8) == false)
+  }
+  
 
 }
