@@ -1,7 +1,6 @@
 package reductions
 
 import org.scalameter._
-import common._
 
 object LineOfSightRunner {
   
@@ -34,7 +33,14 @@ object LineOfSight {
   def max(a: Float, b: Float): Float = if (a > b) a else b
 
   def lineOfSight(input: Array[Float], output: Array[Float]): Unit = {
-    ???
+
+    output(0) = 0
+    for (i <- 1 until input.size) {
+      val angle = input(i) / i
+      if (angle > output(i-1))
+        output(i) = angle
+      else output(i)=output(i-1)
+    }
   }
 
   sealed abstract class Tree {
