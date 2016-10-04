@@ -63,5 +63,10 @@ class ParallelCountChangeSuite extends FunSuite {
     check(250, List(1, 2, 5, 10, 20, 50), 177863)
   }
 
+  test("totalCoinsThreshold should return true when the number of coins is equal to two-thirds of the initial number " +
+    "of coins"){
+    assert(totalCoinsThreshold(6)(20,List(1,2,3,4)))
+  }
+
 
 }
