@@ -1,15 +1,14 @@
 package kmeans
 
-import java.util.concurrent._
-import scala.collection._
-import org.scalatest.FunSuite
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import common._
-import scala.math._
+
+import scala.collection._
 
 object KM extends KMeans
-import KM._
+
+import kmeans.KM._
 
 @RunWith(classOf[JUnitRunner])
 class KMeansSuite extends FunSuite {
@@ -31,6 +30,14 @@ class KMeansSuite extends FunSuite {
     val mean = new Point(1, 1, 1)
     val means: GenSeq[Point] = IndexedSeq(mean)
     val expected = GenMap[Point, GenSeq[Point]]((mean, GenSeq()))
+    checkClassify(points, means, expected)
+  }
+  test("'classify' should work for empty 'points' and 'means' == GenSeq(Point(1,1,1),(2,2,2))") {
+    val points: GenSeq[Point] = IndexedSeq()
+    val p1 = new Point(1, 1, 1)
+    val p2 = new Point(2, 2, 2)
+    val means: GenSeq[Point] = IndexedSeq(p1, p2)
+    val expected = GenMap[Point, GenSeq[Point]]((p1, GenSeq()),(p2,GenSeq()))
     checkClassify(points, means, expected)
   }
 
@@ -67,7 +74,7 @@ class KMeansSuite extends FunSuite {
   test("'classify with data parallelism should work for empty 'points' and empty 'means'") {
     val points: GenSeq[Point] = IndexedSeq()
     val means: GenSeq[Point] = IndexedSeq()
-    val expected = GenMap[Point,GenSeq[Point]]()
+    val expected = GenMap[Point, GenSeq[Point]]()
     checkParClassify(points, means, expected)
   }
 
