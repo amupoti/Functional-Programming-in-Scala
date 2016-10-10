@@ -66,6 +66,10 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
   test("Test unbalanced") {
     assert(parBalance("((((()))))(".toArray, 8) == false)
   }
-  
+
+  test("Test balanced short") {
+    assert(parBalance("()".toArray, 1) == true)
+  }
+
 
 }

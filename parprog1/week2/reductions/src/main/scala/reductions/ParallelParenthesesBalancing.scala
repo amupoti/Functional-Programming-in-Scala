@@ -66,7 +66,7 @@ object ParallelParenthesesBalancing {
     }
 
     def reduce(from: Int, until: Int): (Int, Int) = {
-      if (until - from < threshold) {
+      if (until - from < threshold || threshold==1) {
         traverse(from, until, 0, 0)
       }
       else {
