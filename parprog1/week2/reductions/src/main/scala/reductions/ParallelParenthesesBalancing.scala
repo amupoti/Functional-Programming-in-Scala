@@ -1,5 +1,6 @@
 package reductions
 
+import common.parallel
 import org.scalameter._
 
 object ParallelParenthesesBalancingRunner {
@@ -39,14 +40,14 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
     */
   def balance(chars: Array[Char]): Boolean = {
-    def loop(charList: Array[Char], open: Int): Boolean = {
-      if (charList.isEmpty) open == 0
-      else if (charList.head == '(') loop(charList.tail, open + 1)
-      else if (charList.head == ')' && open > 0) loop(charList.tail, open - 1)
-      else if (charList.head == ')' && open == 0) false
-      else loop(charList.tail, open)
+    def loop(index:Int, open: Int): Boolean = {
+      if (index==chars.length) open == 0
+      else if (chars(index) == '(') loop(index +1, open + 1)
+      else if (chars(index) == ')' && open > 0) loop(index +1, open - 1)
+      else if (chars(index) == ')' && open == 0) false
+      else loop(index +1, open)
     }
-    loop(chars, 0)
+    loop(0, 0)
   }
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
@@ -72,7 +73,7 @@ object ParallelParenthesesBalancing {
       else {
         //We go parallel by computing the chunks
         val mid = from + (until - from) / 2
-        combine(reduce(from, mid), reduce(mid, until))
+        combine(parallel(reduce(from, mid), reduce(mid, until)))
       }
     }
 
@@ -80,7 +81,10 @@ object ParallelParenthesesBalancing {
 
   }
 
-  def combine(left: (Int, Int), right: (Int, Int)): (Int, Int) = {
+  def combine(p:( (Int, Int),(Int, Int))): (Int, Int) = {
+
+    val left = p._1
+    val right = p._2
 
     var (l,r) = (0,0)
     val a = left._1-right._2
