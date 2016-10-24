@@ -1,6 +1,8 @@
 import common._
 import barneshut.conctrees._
 
+import scala.collection.mutable
+
 package object barneshut {
 
   class Boundaries {
@@ -41,37 +43,61 @@ package object barneshut {
     def total: Int
 
     def insert(b: Body): Quad
+
+    def getMassX(q: Quad) = q.massX * q.mass
+
+    def getMassY(q: Quad) = q.massY * q.mass
   }
 
   case class Empty(centerX: Float, centerY: Float, size: Float) extends Quad {
-    def massX: Float = ???
-    def massY: Float = ???
-    def mass: Float = ???
-    def total: Int = ???
-    def insert(b: Body): Quad = ???
+    def massX: Float = centerX
+
+    def massY: Float = centerY
+
+    def mass: Float = 0
+
+    def total: Int = 0
+
+    def insert(b: Body): Quad = Leaf(centerX, centerY, size, Seq(b))
   }
 
   case class Fork(
-    nw: Quad, ne: Quad, sw: Quad, se: Quad
-  ) extends Quad {
-    val centerX: Float = ???
-    val centerY: Float = ???
-    val size: Float = ???
-    val mass: Float = ???
-    val massX: Float = ???
-    val massY: Float = ???
-    val total: Int = ???
+                   nw: Quad, ne: Quad, sw: Quad, se: Quad
+                 ) extends Quad {
+    val size: Float = nw.size * 2
+    val centerX: Float = nw.centerX + (nw.size / 2)
+    val centerY: Float = nw.centerY + (nw.size / 2)
+    val mass: Float = nw.mass + ne.mass + sw.mass + se.mass
+
+    val massX: Float = if (mass != 0) (getMassX(nw) + getMassX(ne) + getMassX(sw) + getMassX(se)) / mass else 0
+    val massY: Float = if (mass != 0) (getMassY(nw) + getMassY(ne) + getMassY(sw) + getMassY(se)) / mass else 0
+    val total: Int = nw.total + ne.total + sw.total + se.total
+
 
     def insert(b: Body): Fork = {
-      ???
+      val (west, north) = (b.x < centerX, b.y < centerY)
+      if (west && north) Fork(nw.insert(b), ne, sw, se)
+      else if (!west && north) Fork(nw, ne.insert(b), sw, se)
+      else if (west && !north) Fork(nw, ne, sw.insert(b), se)
+      else Fork(nw, ne, sw, se.insert(b))
     }
   }
 
   case class Leaf(centerX: Float, centerY: Float, size: Float, bodies: Seq[Body])
   extends Quad {
-    val (mass, massX, massY) = (??? : Float, ??? : Float, ??? : Float)
-    val total: Int = ???
-    def insert(b: Body): Quad = ???
+    val totalMass = bodies.map(b => b.mass).sum
+    val (mass, massX, massY) = if (totalMass != 0) (totalMass: Float, bodies.map(b => b.x * b.mass).sum / totalMass: Float, bodies.map(b => b.y * b.mass).sum / totalMass: Float) else (0f, 0f, 0f)
+    val total: Int = bodies.length
+
+    def insert(b: Body): Quad = bodies.length match {
+      case i: Int if i > minimumSize => {
+        val f = Fork(Empty(centerX - size / 2, centerY - size / 2, size), Empty(centerX + size / 2, centerY - size / 2, size),
+          Empty(centerX - size / 2, centerY + size / 2, size), Empty(centerX + size / 2, centerY + size / 2, size))
+        bodies.foreach(f.insert(_))
+        f
+      }
+      case _ => Leaf(centerX, centerY, size, bodies :+ b)
+    }
   }
 
   def minimumSize = 0.00001f
@@ -120,12 +146,22 @@ package object barneshut {
 
       def traverse(quad: Quad): Unit = (quad: Quad) match {
         case Empty(_, _, _) =>
-          // no force
+
         case Leaf(_, _, _, bodies) =>
-          // add force contribution of each body by calling addForce
-        case Fork(nw, ne, sw, se) =>
+          bodies.foreach(b => addForce(b.mass, b.x, b.y))
+        case Fork(nw, ne, sw, se) => {
+
+          val dist = distance(x, y, quad.centerX, quad.centerY)
+          if ((quad.size / dist) < theta) addForce(quad.mass, quad.centerX, quad.centerY)
+          else {
+            traverse(nw)
+            traverse(ne)
+            traverse(sw)
+            traverse(se)
+          }
           // see if node is far enough from the body,
           // or recursion is needed
+        }
       }
 
       traverse(quad)
