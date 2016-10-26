@@ -67,7 +67,9 @@ import FloatOps._
     val quad = Fork(nw, ne, sw, se)
 
     assert(quad.mass == 0)
-    assert(quad.massX == 0)
+    assert(quad.massX == 20)
+    assert(quad.centerX == 20)
+    assert(quad.centerY == 30)
   }
 
   test("Empty.insert(b) should return a Leaf with only that body") {
@@ -82,6 +84,24 @@ import FloatOps._
         assert(bodies == Seq(b), s"$bodies should contain only the inserted body")
       case _ =>
         fail("Empty.insert() should have returned a Leaf, was $inserted")
+    }
+  }
+
+  test("Leaf.insert(b) should return a new Fork if size > minimumSize") {
+    val b = new Body(123f, 18f, 26f, 0f, 0f)
+    val l = Leaf(17.5f, 27.5f, 5f, Seq(b))
+    l.insert(b) match {
+      case Fork(_, _, _, _) => assert(true)
+      case _ => fail("Insert should return a Fork")
+    }
+  }
+
+  test("Leaf.insert(b) should return a new Leaf if leaf size < minimumSize") {
+    val b = new Body(123f, 18f, 26f, 0f, 0f)
+    val l = Leaf(17.5f, 27.5f, 0.00001f, Seq(b))
+    l.insert(b) match {
+      case Leaf(_, _, _, _) => assert(true)
+      case _ => fail("Insert should return a Leaf")
     }
   }
 
@@ -121,6 +141,72 @@ import FloatOps._
     sm += body
     val res = sm(2, 3).size == 1 && sm(2, 3).find(_ == body).isDefined
     assert(res, s"Body not found in the right sector")
+  }
+
+  test("'SectorMatrix.+=' should add a body at the max range and to the correct bucket of a sector matrix of size 96") {
+    val body = new Body(5, 125, 147, 0.1f, 0.1f)
+    val boundaries = new Boundaries()
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 97
+    boundaries.maxY = 97
+    val sm = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    sm += body
+    val res = sm(7, 7).size == 1 && sm(7, 7).find(_ == body).isDefined
+    assert(res, s"Body not found in the right sector")
+  }
+  test("'SectorMatrix.+=' should add a body at the min range and to the correct bucket of a sector matrix of size 96") {
+    val body = new Body(5, -125, -147, 0.1f, 0.1f)
+    val boundaries = new Boundaries()
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 97
+    boundaries.maxY = 97
+    val sm = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    sm += body
+    val res = sm(0, 0).size == 1 && sm(0, 0).find(_ == body).isDefined
+    assert(res, s"Body not found in the right sector")
+  }
+
+  //Test cases for Boundaries
+
+  val model = new SimulationModel
+  val s = new Simulator(model.taskSupport, model.timeStats)
+
+  test("Updating boundary with a body") {
+    val body = new Body(5, 25, 147, 0.1f, 0.1f)
+    val boundaries = new Boundaries()
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 97
+    boundaries.maxY = 97
+    val b = s.updateBoundaries(boundaries, body)
+    assert(b.maxX == 97)
+    assert(b.maxY == 147)
+    assert(b.minX == 1)
+    assert(b.minY == 1)
+  }
+
+  test("Merge boundaries") {
+    val a = new Boundaries()
+    a.minX = 1
+    a.minY = 1
+    a.maxX = 10
+    a.maxY = 10
+
+    val b = new Boundaries()
+    b.minX = -10
+    b.minY = -10
+    b.maxX = 5
+    b.maxY = 5
+
+    val c = s.mergeBoundaries(a, b)
+    assert(c.minX == -10)
+    assert(c.minY == -10)
+    assert(c.maxX == 10)
+    assert(c.maxY == 10)
+
+
   }
 
 }
