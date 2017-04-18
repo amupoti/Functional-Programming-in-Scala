@@ -19,3 +19,6 @@ project/plugins/project/
 ## Idea Files
 **/.idea
 *.iml
+wikipedia.dat
+stackoverflow.csv
+atussum.csv
