@@ -45,17 +45,17 @@ object WikipediaRanking {
      */
   def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = {
 
-    val ranksSortedAsc = langs map (lang => (lang, occurrencesOfLang(lang, rdd))) sortBy (_._2)
+    val ranksSortedAsc = langs map (lang => (lang, occurrencesOfLang(lang, rdd))) sortBy (-_._2)
     ranksSortedAsc.reverse
   }
 
+
   /* Compute an inverted index of the set of articles, mapping each language
-   * to the Wikipedia pages in which it occurs.
-   */
+     * to the Wikipedia pages in which it occurs.
+     */
   def makeIndex(langs: List[String], rdd: RDD[WikipediaArticle]): RDD[(String, Iterable[WikipediaArticle])] = {
 
-    val scLangs = sc.parallelize(langs)
-    scLangs.cartesian(rdd).filter((lang_art) => articleContainsLang(lang_art._1, lang_art._2)).groupByKey()
+    langInArticle(rdd).groupByKey()
 
   }
 
@@ -67,7 +67,7 @@ object WikipediaRanking {
    */
   def rankLangsUsingIndex(index: RDD[(String, Iterable[WikipediaArticle])]): List[(String, Int)] =
     (index mapValues (i => i.size)).sortBy(_._2, false).collect().toList
-  
+
   /* (3) Use `reduceByKey` so that the computation of the index and the ranking are combined.
    *     Can you notice an improvement in performance compared to measuring *both* the computation of the index
    *     and the computation of the ranking? If so, can you think of a reason?
@@ -77,11 +77,22 @@ object WikipediaRanking {
    */
   def rankLangsReduceByKey(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = {
     //    makeIndex(langs, rdd).map()
-    val scLangs = sc.parallelize(langs)
-    scLangs.cartesian(rdd).filter(lang_art => articleContainsLang(lang_art._1, lang_art._2)).map(lang_art =>
+
+    val langArticles: RDD[(String, WikipediaArticle)] = langInArticle(rdd)
+
+    langArticles.map(lang_art =>
       (lang_art._1, 1)).reduceByKey(_ + _).sortBy(_._2, false).collect().toList
   }
 
+
+  def langInArticle(rdd: RDD[WikipediaArticle]): RDD[(String, WikipediaArticle)] = {
+    val articleLanguagesList = rdd.map(wa => {
+      val textSplit = wa.text.split(" ")
+      (wa, langs.filter(l => textSplit.contains(l)))
+    })
+    articleLanguagesList.flatMapValues(identity).map(_.swap)
+
+  }
 
   def main(args: Array[String]) {
 
