@@ -20,8 +20,16 @@ class TimeUsageSuite extends FunSuite with BeforeAndAfterAll {
 
   }
 
-  test ("row must return a spark row from the given strings in the line"){
+  test("row must return a spark row from the given strings in the line") {
     val row = TimeUsage.row(List("name", "1", "2"))
     assert(row.size===3)
+  }
+
+  test("classified columns must return columnNames in 3 categories") {
+    val columnList = TimeUsage.classifiedColumns(List("t01", "t03", "t11", "t1801", "t1803", "t05", "t1805", "t02",
+      "t04", "t06", "t07", "t08", "t09", "t10", "t12", "t13", "t14", "t15", "t16", "t18"))
+    assert(columnList._1.size === 5)
+    assert(columnList._2.size === 2)
+    assert(columnList._3.size === 13)
   }
 }
