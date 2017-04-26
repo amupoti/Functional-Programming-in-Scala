@@ -17,6 +17,7 @@ import scala.io.Source._
 object Extraction {
 
   import org.apache.log4j.{Level, Logger}
+
   Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
 
   @transient lazy val spark = SparkSession.
@@ -51,14 +52,11 @@ object Extraction {
     * @return A sequence containing triplets (date, location, temperature)
     */
   def locateTemperatures(year: Int, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Double)] = {
-    val fileStationsPath = getFileLocationFromClasspath(stationsFile)
-    val fileTemperaturesPath = getFileLocationFromClasspath(temperaturesFile)
-    println("Loading files through spark")
 
-    val stations = spark.read.textFile(fileStationsPath).map(_.split(",", -1)).flatMap(row => rowToStation(row))
-    val temperatures = spark.read.textFile(fileTemperaturesPath).map(_.split(",", -1)).map(row => rowToTemperature(row))
+    val stations = spark.read.textFile(loadFile(stationsFile)).map(_.split(",", -1)).flatMap(row => rowToStation(row))
+    val temperatures = spark.read.textFile(loadFile(temperaturesFile)).map(_.split(",", -1)).map(row => rowToTemperature(row))
     println(s"Files loaded successfully. Stations: ${stations.count()}, Temperatures: ${temperatures.count()}")
-    //ignore data coming from stations that have no GPS coordinates
+
     val join = stations.joinWith(temperatures, $"id" === $"stationId")
     val triplets = join.collect().map {
       case (st, temp) => (LocalDate.of(year, temp.month, temp.day), Location(st.lat, st.lon), toCelsius(temp.temperature))
@@ -67,7 +65,7 @@ object Extraction {
   }
 
 
-  def getFileLocationFromClasspath(classpathResource: String): String = {
+  def loadFile(classpathResource: String): String = {
     val path = getClass.getResource(classpathResource).toURI.getPath
     println(s"Path for $classpathResource is $path")
     path
@@ -79,9 +77,9 @@ object Extraction {
     */
   def locationYearlyAverageRecords(records: Iterable[(LocalDate, Location, Double)]): Iterable[(Location, Double)] = {
     import org.apache.spark.sql.expressions.scalalang.typed
-    val ds = records.toList.toDS()
-    val gbk = ds.groupByKey(t => t._2).agg(typed.avg(_._3)).collect()
-    gbk
+    val ds = spark.sparkContext.parallelize(records.toSeq).map(t => (t._2, t._3)).toDS()
+    val gbk = ds.groupByKey(t => t._1).agg(typed.avg(_._2)).collect()
+    gbk.toList
   }
 
 }
