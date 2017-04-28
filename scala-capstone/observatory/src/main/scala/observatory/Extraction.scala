@@ -36,12 +36,12 @@ object Extraction {
     (row(0), row(1), row(2), row(3)) match {
       //ignore data coming from stations that have no GPS coordinates
       case (_, _, lat, lon) if (lat.isEmpty || lon.isEmpty) => None
-      case (stn, wban, lat, lon) => Some(Station(stn.concat(wban), lat.toDouble, lon.toDouble))
+      case (stn, wban, lat, lon) => Some(Station(StationId(stn, wban), lat.toDouble, lon.toDouble))
       case _ => None
     }
 
   def rowToTemperature(row: Array[String]): Temperature = {
-    Temperature(row(0).concat(row(1)), row(2).toInt, row(3).toInt, row(4).toDouble)
+    Temperature(StationId(row(0),row(1)), row(2).toInt, row(3).toInt, row(4).toDouble)
   }
 
 
