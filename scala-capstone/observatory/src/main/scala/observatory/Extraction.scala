@@ -41,7 +41,7 @@ object Extraction {
     }
 
   def rowToTemperature(row: Array[String]): Temperature = {
-    Temperature(StationId(row(0),row(1)), row(2).toInt, row(3).toInt, row(4).toDouble)
+    Temperature(StationId(row(0), row(1)), row(2).toInt, row(3).toInt, row(4).toDouble)
   }
 
 
@@ -76,10 +76,13 @@ object Extraction {
     * @return A sequence containing, for each location, the average temperature over the year.
     */
   def locationYearlyAverageRecords(records: Iterable[(LocalDate, Location, Double)]): Iterable[(Location, Double)] = {
-    import org.apache.spark.sql.expressions.scalalang.typed
-    val ds = spark.sparkContext.parallelize(records.toSeq).map(t => (t._2, t._3)).toDS()
-    val gbk = ds.groupByKey(t => t._1).agg(typed.avg(_._2)).collect()
-    gbk.toList
+    //    import org.apache.spark.sql.expressions.scalalang.typed
+    //    val ds = spark.sparkContext.parallelize(records.toSeq).map(t => (t._2, t._3)).toDS()
+    //    val gbk = ds.groupByKey(t => t._1).agg(typed.avg(_._2)).collect()
+    //    gbk.toList
+    val averages = records.par.map(t => (t._2, t._3)).groupBy(_._1).mapValues(l => l.foldLeft(0.0)((acc, e) => acc + e
+      ._2) / l.size)
+    averages.toList
   }
 
 }

@@ -1,6 +1,7 @@
 package observatory
 
 
+import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -34,7 +35,43 @@ class VisualizationTest extends FunSuite with Checkers {
   }
   test("interpolateColor must provide colors for liniar interpolated values") {
     val value = Visualization.interpolateColor(points, 59.0)
-    assert(value.green === 255)
+    assert(value.green === 246)
+  }
+
+  test("interpolate color in mid range") {
+    assert(Visualization.linearInterpolation((-2.147483648E9, Color(255, 0, 0)), (0.0, Color(0, 0, 255)), -1.073741824E9)
+      === Color(128, 0, 128))
+
+  }
+
+  test("linear interpolation for an equidistant temperature should get mean value for a color") {
+    val x0 = (10.0, Color(255, 255, 255))
+    val x1 = (20.0, Color(255, 255, 251))
+    assert(Visualization.linearInterpolation(x0, x1, 15.0) === Color(255, 255, 253))
+  }
+
+  test("linear interpolation for a color should generate a color closer to the closest temperature") {
+    val x0 = (10.0, Color(255, 255, 255))
+    val x1 = (20.0, Color(255, 255, 251))
+    assert(Visualization.linearInterpolation(x0, x1, 18.0) === Color(255, 255, 252))
+  }
+
+
+  test("linear interpolation for a color should generate a color closer to the closest temperature with inverted " +
+    "values") {
+    val x0 = (20.0, Color(255, 255, 255))
+    val x1 = (10.0, Color(255, 255, 251))
+    assert(Visualization.linearInterpolation(x0, x1, 18.0) === Color(255, 255, 254))
+  }
+
+
+  ignore("visualize must return an image") {
+    val t1 = (Location(0.0, 0.0), 10.0)
+    val t2 = (Location(2.0, 2.0), 15.0)
+    val temps = Seq(t1, t2)
+    val image = Visualization.visualize(temps, points)
+    assert(image.width === 360)
+    assert(image.height === 180)
   }
 
 }
