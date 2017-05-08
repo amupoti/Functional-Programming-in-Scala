@@ -205,8 +205,8 @@ object TimeUsage {
     //Wonder if this is also valid
     //val ds = timeUsageSummaryDf.as[TimeUsageRow]
 
-    val ds = timeUsageSummaryDf map (df => TimeUsageRow(df.getAs[String]("working"), df.getAs[String]("sex"), df
-      .getAs[String]("age"), df.getAs[Double]("primaryNeeds"), df.getAs[Double]("work"), df.getAs[Double]
+    val ds = timeUsageSummaryDf map (df => TimeUsageRow(df.getAs("working"), df.getAs("sex"), df
+      .getAs[String]("age"), df.getAs("primaryNeeds"), df.getAs("work"), df.getAs
       ("other")))
     ds
   }
@@ -225,7 +225,10 @@ object TimeUsage {
   def timeUsageGroupedTyped(summed: Dataset[TimeUsageRow]): Dataset[TimeUsageRow] = {
     import org.apache.spark.sql.expressions.scalalang.typed
     val ds = summed.groupByKey(tur => (tur.working, tur.sex, tur.age)).
-      agg(typed.avg(_.primaryNeeds), typed.avg(_.work), typed.avg(_.other)).
+      agg(
+        typed.avg(_.primaryNeeds),
+        typed.avg(_.work),
+        typed.avg(_.other)).
       map(r => TimeUsageRow(r._1._1, r._1._2, r._1._3, roundAt(1, r._2), roundAt(1, r._3), roundAt(1, r._4))).
       orderBy("working","sex","age")
     ds
