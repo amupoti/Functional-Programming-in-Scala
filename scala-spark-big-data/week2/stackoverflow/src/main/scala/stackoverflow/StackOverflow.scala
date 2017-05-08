@@ -101,6 +101,7 @@ class StackOverflow extends Serializable {
       highScore
     }
 
+    //TODO: use map to get answer iterable and compute score
     grouped.map(v => {
       val questionsAnswers = v._2.unzip
       val highScore = answerHighScore(questionsAnswers._2.toArray)
@@ -216,7 +217,6 @@ class StackOverflow extends Serializable {
       newMeans
     }
   }
-
 
   //
   //
