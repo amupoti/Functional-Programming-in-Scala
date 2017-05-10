@@ -11,7 +11,7 @@ object Visualization {
 
   val spark = Extraction.spark
   val earthRadius = 6371
-  val p = 6
+  val p = 2
   val delta = 0.01
 
   def roundAt(p: Int, n: Double): Double = {
@@ -34,6 +34,7 @@ object Visualization {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Double)], location: Location): Double = {
+
     //use Inverse distance weighting
     val closeTemp = temperatures.find(loc_temp => isCloseLocation(location, loc_temp._1)).headOption
 
@@ -44,8 +45,10 @@ object Visualization {
         val dist = 1 / pow(computeDistance(loc_temp._1, location), p)
         (loc_temp._2 * dist, dist)
       })
-      val numDenum = numDenumVals.aggregate((0.0, 0.0))((acc, value) => (acc._1 + value._1, acc._2 + value._2),
-        (acc, value) => (acc._1 + value._1, acc._2 + value._2))
+      //      val numDenum = numDenumVals.aggregate((0.0, 0.0))((acc, value) => (acc._1 + value._1, acc._2 + value._2),
+      //        (acc, value) => (acc._1 + value._1, acc._2 + value._2))
+
+      val numDenum = numDenumVals.foldLeft((0.0, 0.0))((acc, value) => (acc._1 + value._1, acc._2 + value._2))
 
       numDenum._1 / numDenum._2
     }
@@ -105,7 +108,7 @@ object Visualization {
       Location(lat, lon)
     }
 
-    val pixels = locations.par.
+    val pixels = locations.
       map(l => interpolateColor(colors, predictTemperature(temperatures, l))).
       map(c => Pixel(c.red, c.green, c.blue, 255)).toArray
     Image(360, 180, pixels)
