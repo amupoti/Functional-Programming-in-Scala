@@ -11,7 +11,7 @@ object Visualization {
 
   val spark = Extraction.spark
   val earthRadius = 6371
-  val p = 2
+  val p = 3.5
   val delta = 0.01
 
   def roundAt(p: Int, n: Double): Double = {
@@ -22,7 +22,11 @@ object Visualization {
   def computeDistance(l1: Location, l2: Location) = {
     //use great-circle distance
     val ds = acos(sin(l1.lat) * sin(l2.lat) + cos(l1.lat) * cos(l2.lat) * cos(abs(l2.lon - l1.lon)))
-    ds * earthRadius
+    val dLat = abs(l2.lat - l1.lat)
+    val dLon = abs(l2.lon - l1.lon)
+
+    val sq = pow(sin(dLat / 2), 2) + cos(l1.lat) * cos(l2.lat) * pow(sin(dLon / 2), 2)
+    2 * asin(sqrt(sq)) * earthRadius
   }
 
   def isCloseLocation(loc1: Location, loc2: Location): Boolean =
@@ -34,6 +38,8 @@ object Visualization {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Double)], location: Location): Double = {
+    System.err.println("temp: " + temperatures.mkString(","))
+    System.err.println("location:" + location)
 
     //use Inverse distance weighting
     val closeTemp = temperatures.find(loc_temp => isCloseLocation(location, loc_temp._1)).headOption
@@ -45,19 +51,17 @@ object Visualization {
         val dist = 1 / pow(computeDistance(loc_temp._1, location), p)
         (loc_temp._2 * dist, dist)
       })
-      //      val numDenum = numDenumVals.aggregate((0.0, 0.0))((acc, value) => (acc._1 + value._1, acc._2 + value._2),
-      //        (acc, value) => (acc._1 + value._1, acc._2 + value._2))
 
       val numDenum = numDenumVals.foldLeft((0.0, 0.0))((acc, value) => (acc._1 + value._1, acc._2 + value._2))
 
+      System.err.println("out:" + numDenum._1 / numDenum._2)
       numDenum._1 / numDenum._2
     }
-
   }
 
   def computeTemp(x0: Int, x1: Int, p: Double) = round(x1 * p + x0 * (1 - p)).toInt
 
-  def linearInterpolation(x0: (Double, Color), x1: (Double, Color), value: Double): Color = {
+  def linearInterpolation2(x0: (Double, Color), x1: (Double, Color), value: Double): Color = {
     val (r0, g0, b0) = (x0._2.red, x0._2.green, x0._2.blue)
     val (r1, g1, b1) = (x1._2.red, x1._2.green, x1._2.blue)
     val percentage = roundAt(3, (value - x0._1) / (x1._1 - x0._1))
@@ -65,6 +69,20 @@ object Visualization {
     val tG = computeTemp(g0, g1, percentage)
     val tB = computeTemp(b0, b1, percentage)
     Color(tR, tG, tB)
+  }
+
+  def linearInterpolation(x0: (Double, Color), x1: (Double, Color), value: Double): Color = {
+    val (r0, g0, b0, t0) = (x0._2.red, x0._2.green, x0._2.blue, x0._1)
+    val (r1, g1, b1, t1) = (x1._2.red, x1._2.green, x1._2.blue, x1._1)
+
+    val r = computeInterpolation(value, r0, t0, r1, t1)
+    val g = computeInterpolation(value, g0, t0, g1, t1)
+    val b = computeInterpolation(value, b0, t0, b1, t1)
+    Color(r, g, b)
+  }
+
+  def computeInterpolation(value: Double, r0: Int, t0: Double, r1: Int, t1: Double) = {
+    round(r0 + ((value - t0) * (r1 - r0)) / (t1 - t0)).toInt
   }
 
   /**
@@ -94,7 +112,6 @@ object Visualization {
         }
       }
     }
-
   }
 
   /**

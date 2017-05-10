@@ -44,19 +44,47 @@ object Interaction {
     * @param y            Y coordinate
     * @return A 256×256 image showing the contents of the tile defined by `x`, `y` and `zooms`
     */
-  def tile(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)], zoom: Int, x: Int, y: Int): Image = {
-    System.err.println("temp: " + temperatures.mkString(","))
-    System.err.println("colors:" + colors.mkString(","))
-    System.err.println("zoom:" + zoom + "x:" + x + "y:" + y)
+  def tile2(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)], zoom: Int, x: Int, y: Int)
+  : Image = {
+
+    val levels = zoom + 8
+    val size = 256
+    val imageWidth = size
+    val imageHeight = size
+    //TODO: sort temperatures
+
+    val pixels = (0 until imageWidth * imageHeight)
+      .par.map(pos => {
+      val xPos = (pos % imageWidth).toDouble / imageWidth + x // column of image as fraction with offset x
+      val yPos = (pos / imageHeight).toDouble / imageHeight + y // row of image as fraction with offset y
+      (pos, interpolateColor(colors, predictTemperature(temperatures, tileLocationD(levels, xPos, yPos))))
+    }).seq
+      .sortBy(_._1)
+      .map(_._2)
+      .map(c => Pixel(c.red, c.green, c.blue, 127))
+
+    //    Image(imageWidth, imageHeight, pixels.toArray)
+    //    val pixels = locations.par.
+    //      map { case (xpos, ypos) => tileLocationD(levels, (xpos.toFloat / size) + x, (ypos.toFloat / size) + y) }.
+    //      map(loc => interpolateColor(colors, predictTemperature(temperatures, loc))).
+    //      map(c => Pixel(c.red, c.green, c.blue, 127)).toArray
+    Image(size, size, pixels.toArray)
+
+  }
+
+  def tile(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)], zoom: Int, x: Int, y: Int)
+  : Image = {
+
     val levels = zoom + 8
     val size = 256
 
     //TODO: sort temperatures
-    val locations = for (x <- 0 until size; y <- 0 until size) yield {
-      (x, y)
+
+    val locations = for (ypos <- 0 until size; xpos <- 0 until size) yield {
+      (xpos, ypos)
     }
-    val pixels = locations.par.
-      map { case (x, y) => tileLocationD(levels, x.toFloat / size + x, y.toFloat / size + y) }.
+    val pixels = locations.
+      map { case (xpos, ypos) => tileLocationD(levels, (xpos.toFloat / size) + x, (ypos.toFloat / size) + y) }.
       map(loc => interpolateColor(colors, predictTemperature(temperatures, loc))).
       map(c => Pixel(c.red, c.green, c.blue, 127)).toArray
     Image(size, size, pixels)

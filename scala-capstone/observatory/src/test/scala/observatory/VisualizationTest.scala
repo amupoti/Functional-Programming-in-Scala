@@ -3,6 +3,7 @@ package observatory
 
 import observatory.Extraction.{locateTemperatures, locationYearlyAverageRecords}
 import org.junit.runner.RunWith
+import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.prop.Checkers
@@ -13,6 +14,10 @@ class VisualizationTest extends FunSuite with Checkers {
   val colors = Seq((60.0, Color(255, 255, 255)), (32.0, Color(255, 0, 0)), (12.0, Color(255, 255, 0)), (0.0,
     Color(0, 255, 255)), (-15.0, Color(0, 0, 255)), (-27.0, Color(255, 0, 255)), (-50.0, Color(33, 0, 107))
     , (-60.0, Color(0, 0, 0)))
+
+  implicit val doubleEquality = TolerantNumerics.tolerantDoubleEquality(0.01)
+
+  import org.scalactic.Tolerance._
 
   test("Predicted temperature should be between provided known values") {
     val t1 = (Location(0.0, 0.0), 10.0)
@@ -82,7 +87,7 @@ class VisualizationTest extends FunSuite with Checkers {
   }
 
 
-  test("visualize must return an image") {
+  ignore("visualize must return an image") {
     val t1 = (Location(0.0, 0.0), 10.0)
     val t2 = (Location(2.0, 2.0), 15.0)
     val temps = Seq(t1, t2)
@@ -101,17 +106,37 @@ class VisualizationTest extends FunSuite with Checkers {
     assert(temp1 - result < temp2 - result)
   }
 
-  test("visualize by writing image with minimal data (2021)") {
+  test("predictTemperature: some point closer with 3 values") {
+    val location1 = Location(1, 1)
+    val temp1 = 10d
+    val location2 = Location(-10, -10)
+    val temp2 = 40d
+    val location3 = Location(10, 10)
+    val temp3 = 40d
+    val list = List((location1, temp1), (location2, temp2), (location3, temp3))
+    val result = Visualization.predictTemperature(list, Location(0, 0))
+    assert(temp1 - result < temp2 - result && temp1 - result < temp3 - result)
+  }
+
+  ignore("visualize by writing image with minimal data (2021)") {
     val temperatures = locateTemperatures(2021, "/reduced/stations.csv", "/reduced/2021.csv")
     val averages = locationYearlyAverageRecords(temperatures)
     val image = Visualization.visualize(averages, colors)
     image.output(new java.io.File("/tmp/2021.png"))
   }
 
-  test("visualize by writing image with small dataset (1975 reduced)") {
+  ignore("visualize by writing image with small dataset (1975 reduced)") {
     val temperatures = locateTemperatures(1975, "/stations.csv", "/1975_reduced.csv")
     val averages = locationYearlyAverageRecords(temperatures)
     val image = Visualization.visualize(averages, colors)
     image.output(new java.io.File("/tmp/1975_reduced.png"))
   }
+
+
+  test("predictTemperature small sets") {
+    assert(Visualization.predictTemperature(List((Location(45.0, -90.0), 10.0), (Location(-45.0, 0.0), 20.0)), Location(0.0, -45.0)) === 15.0)
+    assert(Visualization.predictTemperature(List((Location(0.0, 0.0), 10.0)), Location(0.0, 0.0)) === 10.0)
+    assert(Visualization.predictTemperature(List((Location(45.0, -90.0), 0.0), (Location(-45.0, 0.0), 59.028308521858634)), Location(0.0, 0.0)).round === 52)
+  }
+
 }
