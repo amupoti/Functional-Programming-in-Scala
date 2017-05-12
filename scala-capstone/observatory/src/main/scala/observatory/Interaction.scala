@@ -62,12 +62,6 @@ object Interaction {
       .sortBy(_._1)
       .map(_._2)
       .map(c => Pixel(c.red, c.green, c.blue, 127))
-
-    //    Image(imageWidth, imageHeight, pixels.toArray)
-    //    val pixels = locations.par.
-    //      map { case (xpos, ypos) => tileLocationD(levels, (xpos.toFloat / size) + x, (ypos.toFloat / size) + y) }.
-    //      map(loc => interpolateColor(colors, predictTemperature(temperatures, loc))).
-    //      map(c => Pixel(c.red, c.green, c.blue, 127)).toArray
     Image(size, size, pixels.toArray)
 
   }
@@ -78,7 +72,6 @@ object Interaction {
     val levels = zoom + 8
     val size = 256
 
-    //TODO: sort temperatures
 
     val locations = for (ypos <- 0 until size; xpos <- 0 until size) yield {
       (xpos, ypos)

@@ -21,11 +21,13 @@ object Visualization {
 
   def computeDistance(l1: Location, l2: Location) = {
     //use great-circle distance
-    val ds = acos(sin(l1.lat) * sin(l2.lat) + cos(l1.lat) * cos(l2.lat) * cos(abs(l2.lon - l1.lon)))
-    val dLat = abs(l2.lat - l1.lat)
-    val dLon = abs(l2.lon - l1.lon)
 
-    val sq = pow(sin(dLat / 2), 2) + cos(l1.lat) * cos(l2.lat) * pow(sin(dLon / 2), 2)
+    val ds = acos(sin(toRadians(l1.lat)) * sin(toRadians(l2.lat)) + cos(toRadians(l1.lat)) * cos(toRadians(l2.lat)) *
+      cos(toRadians(abs(l2.lon - l1.lon))))
+    val dLat = toRadians(abs(l2.lat - l1.lat))
+    val dLon = toRadians(abs(l2.lon - l1.lon))
+
+    val sq = pow(sin(dLat / 2), 2) + cos(toRadians(l1.lat)) * cos(toRadians(l2.lat)) * pow(sin(dLon / 2), 2)
     2 * asin(sqrt(sq)) * earthRadius
   }
 
@@ -38,8 +40,6 @@ object Visualization {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Double)], location: Location): Double = {
-    System.err.println("temp: " + temperatures.mkString(","))
-    System.err.println("location:" + location)
 
     //use Inverse distance weighting
     val closeTemp = temperatures.find(loc_temp => isCloseLocation(location, loc_temp._1)).headOption
@@ -54,7 +54,6 @@ object Visualization {
 
       val numDenum = numDenumVals.foldLeft((0.0, 0.0))((acc, value) => (acc._1 + value._1, acc._2 + value._2))
 
-      System.err.println("out:" + numDenum._1 / numDenum._2)
       numDenum._1 / numDenum._2
     }
   }
@@ -82,7 +81,8 @@ object Visualization {
   }
 
   def computeInterpolation(value: Double, r0: Int, t0: Double, r1: Int, t1: Double) = {
-    round(r0 + ((value - t0) * (r1 - r0)) / (t1 - t0)).toInt
+    //TODO: check next formula
+    round((r0 * (t1 - value) + r1 * (value - t0)) / (t1 - t0)).toInt
   }
 
   /**

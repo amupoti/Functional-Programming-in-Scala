@@ -12,6 +12,9 @@ object Manipulation {
     */
   def makeGrid(temperatures: Iterable[(Location, Double)]): (Int, Int) => Double = {
     ???
+    ((a, b) => {
+      Visualization.predictTemperature(temperatures, Location(a, b))
+    })
   }
 
   /**
@@ -25,7 +28,7 @@ object Manipulation {
 
   /**
     * @param temperatures Known temperatures
-    * @param normals A grid containing the “normal” temperatures
+    * @param normals      A grid containing the “normal” temperatures
     * @return A sequence of grids containing the deviations compared to the normal temperatures
     */
   def deviation(temperatures: Iterable[(Location, Double)], normals: (Int, Int) => Double): (Int, Int) => Double = {

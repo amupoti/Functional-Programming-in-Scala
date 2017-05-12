@@ -139,4 +139,44 @@ class VisualizationTest extends FunSuite with Checkers {
     assert(Visualization.predictTemperature(List((Location(45.0, -90.0), 0.0), (Location(-45.0, 0.0), 59.028308521858634)), Location(0.0, 0.0)).round === 52)
   }
 
+  test("interpolateColor - 2 elements") {
+    assert(Visualization.interpolateColor(List((10.0, Color(0, 0, 0)), (40.0, Color(60, 60, 60))), 30) === Color(40, 40, 40))
+  }
+
+  test("interpolateColor - 2 elements inversed") {
+    assert(Visualization.interpolateColor(List((40.0, Color(60, 60, 60)), (10.0, Color(0, 0, 0))), 30) === Color(40, 40, 40))
+  }
+
+  test("interpolateColor - 2 elements, from red to blue") {
+    assert(Visualization.interpolateColor(List((0.0,Color(255,0,0)), (1.0,Color(0,0,255))), 0.25) === Color(191, 0, 64))
+  }
+
+  test("interpolateColor - 2 elements, from red to blue, argument before first interval") {
+    assert(Visualization.interpolateColor(List((0.0,Color(255,0,0)), (1.0,Color(0,0,255))), -0.1) === Color(255, 0, 0))
+  }
+
+  test("interpolateColor - 2 elements, from red to blue, argument after the last interval") {
+    assert(Visualization.interpolateColor(List((0.0,Color(255,0,0)), (1.0,Color(0,0,255))), 1.1) === Color(0, 0, 255))
+  }
+
+  test("interpolateColor - 2 elements, middle between red and blue") {
+    assert(Visualization.interpolateColor(List((0.0,Color(255,0,0)), (1445.0,Color(0,0,255))), 722.5) === Color(128,0,128))
+  }
+
+  test("interpolateColor - 2 elements, middle between red and blue, big values") {
+    assert(Visualization.interpolateColor(List((-353.0,Color(255,0,0)), (163810.0, Color(0,0,255))), 81728.5) === Color(128,0,128))
+  }
+
+  test("interpolateColor - 3 elements") {
+    assert(Visualization.interpolateColor(List((0.0, Color(13, 17, 19)), (10.0, Color(0, 0, 0)), (40.0, Color(60, 60, 60))), 30) === Color(40, 40, 40))
+  }
+
+  test("interpolateColor - 3 unsorted elements 2nd interval") {
+    assert(Visualization.interpolateColor(List((10.0, Color(0, 0, 0)), (0.0, Color(13, 17, 19)), (40.0, Color(60, 60, 60))), 30) === Color(40, 40, 40))
+  }
+
+  test("interpolateColor - 3 unsorted elements 1st interval") {
+    assert(Visualization.interpolateColor(List((10.0, Color(8, 8, 8)), (0.0, Color(0, 0, 0)), (40.0, Color(60, 60, 60))), 7.5) === Color(6, 6, 6))
+  }
+
 }
