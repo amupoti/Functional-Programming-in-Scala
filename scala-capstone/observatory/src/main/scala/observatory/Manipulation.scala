@@ -11,10 +11,17 @@ object Manipulation {
     *         returns the predicted temperature at this location
     */
   def makeGrid(temperatures: Iterable[(Location, Double)]): (Int, Int) => Double = {
-    ???
-    ((a, b) => {
-      Visualization.predictTemperature(temperatures, Location(a, b))
+    val latLong = (for (lat <- -89 to 90; long <- -180 to 179) yield {
+      (lat, long)
     })
+
+    val tMap = latLong.par.map { case (lat, long) => ((lat, long) -> Visualization.predictTemperature(temperatures,
+      Location(lat, long)))
+    }.toMap
+
+    (a, b) => {
+      tMap((a, b))
+    }
   }
 
   /**
@@ -23,7 +30,12 @@ object Manipulation {
     * @return A function that, given a latitude and a longitude, returns the average temperature at this location
     */
   def average(temperaturess: Iterable[Iterable[(Location, Double)]]): (Int, Int) => Double = {
+
     ???
+//    val grids = temperaturess.map(makeGrid(_))
+//    val values = ((a: Int, b: Int) => grids.map(v => v(a, b)).map)
+//    //    values.sum / values.le
+//    values
   }
 
   /**
